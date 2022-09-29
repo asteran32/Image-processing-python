@@ -33,10 +33,10 @@ bg = bg + 150 # range 150 ~ 180
 
 # 블러 커널, 밝기 낮추는 커널
 kernel = np.ones((3,3), np.float32) / 9
-base = np.full((size, size), 100, dtype=np.uint8)
+base = np.full((size, size), 170, dtype=np.uint8)
 
 output = []
-test = []
+
 for i in range(digits_len):
     x, y, w, h = digits_coordinate[i]
     # crop
@@ -53,32 +53,23 @@ for i in range(digits_len):
     # 바이너리 인버스
     resized = cv2.resize(border, (size, size))
     
-    _m = cv2.subtract(mask, base)
-    test.append(_m)
+    # 숫자 부분만 밝히기 위해 배경 0 숫자는 50 마스크 만듬
+    bright_mask = cv2.subtract(resized, base) # max 0 - 100
 
     # operation
-    sub = cv2.subtract(bg, resized) # 그레이 배경 추가
-    # sub = bg - resized
+    sub = cv2.subtract(bg, bright_mask) # 그레이 배경 추가
 
     # blur
     blur = cv2.filter2D(sub, -1, kernel)
     output.append(blur)
 
-# 블러링 # blur = cv2.blur(img,(3,3)) 랑 같음
-# kernel = np.ones((3,3), np.float32) / 9
-# bg_dst = cv2.filter2D(bg, -1, kernel)
-
 # 배경, 숫자, 텍스처 이미지 연산
     
-
-# 블러
-
-
 # 저장
 
 # 보기
 for i in range(digits_len):
-    cv2.imshow(str(i), test[i])
+    cv2.imshow(str(i), output[i])
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
