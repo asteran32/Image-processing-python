@@ -5,13 +5,16 @@ import numpy as np
 import argparse
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                    help='an integer for the accumulator')
-parser.add_argument('--sum', dest='accumulate', action='store_const',
-                    const=sum, default=max,
-                    help='sum the integers (default: find the max)')
+parser.add_argument('--mask', type=str, required=True,
+                    help='path of texture mask image')
+parser.add_argument('--font', type=str, required=True,
+                    help='path of digit font image')
 
-size = 30
+args  = parser.parse_args()
+texture_mask = args.mask
+font_mask = args.font
+
+size = 28
 cnt = 20
 out_dir = 'output'
 
@@ -64,10 +67,10 @@ def make_dirs(output_path):
             sub_path = os.path.join(output_path, str(i))
             if not os.path.exists(sub_path):
                 os.mkdir(sub_path)
-            
-
+    
+                         
 # 텍스처 이미지 로드
-texture = cv2.imread('img/crack_texture.png', 0)
+texture = cv2.imread(texture_mask, 0)
 _, t_dst = cv2.threshold(texture, 127, 255, cv2.THRESH_BINARY)
 t_dst = 255 - t_dst
 
@@ -83,7 +86,7 @@ t_mask = crop_texture(t_dst)
 print(f'Num of texture mask {len(t_mask)}')
 
 # 폰트 좌표 추출
-src = cv2.imread('img/font_13.png', 0)
+src = cv2.imread(font_mask, 0)
 _, dst = cv2.threshold(src, 127, 255, cv2.THRESH_BINARY)
 dst = 255 - dst  # inverse
 
@@ -102,6 +105,10 @@ for i in range(len(digits_coordinate)):
     x, y, w, h = digits_coordinate[i]
     # crop
     mask = dst[y:y+h, x:x+w]
+
+    # resized = cv2.resize(mask, (size - 4, size - 4)) # 24, 24
+    # border = cv2.copyMakeBorder(resized, 2, 2, 2, 2, cv2.BORDER_CONSTANT, None, 0)
+    # digits_imgs.append(border)
 
     # add padding
     h_pad = (size - h) >> 1
